@@ -1136,9 +1136,17 @@ void AllReduceTestColl::runColl(const TestArgs& args, cudaStream_t stream) {
     tmpBuff = scratchPacketBuff;
     nThreadsPerBlock = 512;
   } else if (kernelNum == 7) {
-    nBlocks = 28;
+    //nBlocks = 28;
     tmpBuff = scratchPacketBuff;
-    nThreadsPerBlock = 1024;
+    //nThreadsPerBlock = 1024;
+    if(paramCount_ < 8192){
+     nBlocks = 28;
+     nThreadsPerBlock = 1024;
+    }
+    else{
+     nBlocks = 56;
+     nThreadsPerBlock = (paramCount_ <= 76800) ? 512 : 1024;
+    }
 
   }else {
     nBlocks = std::max(args.nRanksPerNode - 1, 1) * BLOCKS_PER_PEER;
@@ -1269,8 +1277,8 @@ bool AllReduceTestEngine::isInPlace() const {
 }
 
 void AllReduceTestEngine::allocateBuffer() {
-  inputBuff_ = mscclpp::allocExtSharedCuda<int>(args_.maxBytes / sizeof(int));
-  resultBuff_ = mscclpp::allocExtSharedCuda<int>(args_.maxBytes / sizeof(int));
+  inputBuff_ = mscclpp::allocSharedCuda<int>(args_.maxBytes / sizeof(int));
+  resultBuff_ = mscclpp::allocSharedCuda<int>(args_.maxBytes / sizeof(int));
   inputBuff = inputBuff_.get();
   resultBuff = resultBuff_.get();
 
