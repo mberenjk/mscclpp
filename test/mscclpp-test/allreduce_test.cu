@@ -944,6 +944,7 @@ __global__ void allreduce2(int* buff, void* scratch, void* putPktBuf, void* getP
 __global__ void __launch_bounds__(1024)
     allreduce3(int* buff, int* scratch, int rank, int nRanksPerNode, int worldSize, size_t nelems) {
   reduceScatter(buff, scratch, rank, nRanksPerNode, worldSize, nelems);
+  deviceSyncer.sync(gridDim.x);
   if (threadIdx.x == 0 && blockIdx.x == 0) {
     allGather(rank, worldSize, nRanksPerNode, nelems / worldSize);
   }
